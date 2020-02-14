@@ -10,11 +10,23 @@
 CLASS lcl_aduaneira DEFINITION.
 
   PUBLIC SECTION.
-*   Tabela do tipo utilizado com a massa de dados
-    DATA:mt_movimentacoes TYPE TABLE OF ztreina_rr03.
 
-*   Tabela que possui os países e classes
-    DATA: mt_classes TYPE TABLE OF zabaptrt06_jm.
+    TYPES:
+      BEGIN OF ty_s_dados_processados,
+        protocolo     TYPE char6,
+        descr_produto	TYPE char30,
+        declarado	    TYPE char2,
+        pais_origem	  TYPE char3,
+        valor_produto TYPE pad_amt7s,
+        status        TYPE bapi_msg,
+        valor_imposto	TYPE pad_amt7s,
+        valor_multa	  TYPE pad_amt7s,
+        valor_total   TYPE pad_amt7s,
+      END OF ty_s_dados_processados.
+
+    DATA:mt_movimentacoes      TYPE TABLE OF ztreina_rr03. "Tabela do tipo utilizado com a massa de dados
+    DATA: mt_classes           TYPE TABLE OF zabaptrt06_jm. "Tabela que possui os países e classes
+    DATA: mt_dados_processados TYPE TABLE OF ty_s_dados_processados. "Tabela de dados retornados com o modelo definido em TYPES
 
     METHODS:
       constructor,
@@ -51,17 +63,51 @@ CLASS lcl_aduaneira IMPLEMENTATION.
   ENDMETHOD.                    "selecao
 
   METHOD processamento.
-*   Estrutura do tipo utilizado com a massa de dados
-    DATA: ls_movimentacao TYPE ztreina_rr03.
+    DATA: ls_movimentacao      TYPE ztreina_rr03. "Estrutura do tipo utilizado com a massa de dados
+    DATA: lo_calculo           TYPE REF TO zabaptrif01_jm. "Este objeto referencia um tipo de classe que implementa esta interface
+    DATA: lv_classe_de_calc    TYPE zabaptrde18_jm. "Estrutura que possui os países e classes
 
-*   Estrutura que possui os países e classes
-    DATA: lv_classe_de_calc TYPE ZABAPTRDE18_JM.
+*   Estrutura final com modelo definido em TYPES
+    DATA: ls_dados_processados TYPE ty_s_dados_processados.
+    DATA: lv_declarado TYPE flag.
 
+*   Método para obter a classe de um país específico
     LOOP AT mt_movimentacoes INTO ls_movimentacao.
-      CLEAR lv_classe_de_calc.
+      CLEAR: lv_classe_de_calc, lo_calculo, ls_dados_processados.
 
 *     Exporta o país da massa que será verificado no método e retorna o tipo de classe
       lv_classe_de_calc = get_calc_class( ls_movimentacao-pais_origem ).
+
+      CASE ls_movimentacao-declarado.
+        WHEN 'D'.
+          lv_declarado = abap_true.
+        WHEN 'ND'.
+          lv_declarado = space.
+        WHEN OTHERS.
+          lv_declarado = space.
+      ENDCASE.
+
+*     Instância Dinâmica padrão calculo
+      CREATE OBJECT lo_calculo TYPE (lv_classe_de_calc).
+      lo_calculo->calculo(
+
+*     Método Cálculo padrão por país
+      EXPORTING
+        iv_valor_produto = ls_movimentacao-valor_produto
+        iv_declarado = lv_declarado
+        IMPORTING
+          ev_valor_total   = ls_dados_processados-valor_total
+          ev_valor_imposto = ls_dados_processados-valor_imposto
+          ev_valor_multa   = ls_dados_processados-valor_multa
+          ev_status        = ls_dados_processados-status ).
+
+      ls_dados_processados-protocolo     = ls_movimentacao-protocolo.
+      ls_dados_processados-descr_produto = ls_movimentacao-descr_produto.
+      ls_dados_processados-pais_origem   = ls_movimentacao-pais_origem.
+      ls_dados_processados-declarado     = ls_movimentacao-declarado.
+      ls_dados_processados-valor_produto = ls_movimentacao-valor_produto.
+
+      APPEND ls_dados_processados TO mt_dados_processados.
 
     ENDLOOP.
   ENDMETHOD.                    "processamento
