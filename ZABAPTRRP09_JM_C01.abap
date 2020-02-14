@@ -101,6 +101,7 @@ CLASS lcl_aduaneira IMPLEMENTATION.
           ev_valor_multa   = ls_dados_processados-valor_multa
           ev_status        = ls_dados_processados-status ).
 
+*     Populando a estrutura com os cálculos realizados e appendando uma a uma
       ls_dados_processados-protocolo     = ls_movimentacao-protocolo.
       ls_dados_processados-descr_produto = ls_movimentacao-descr_produto.
       ls_dados_processados-pais_origem   = ls_movimentacao-pais_origem.
@@ -113,6 +114,29 @@ CLASS lcl_aduaneira IMPLEMENTATION.
   ENDMETHOD.                    "processamento
 
   METHOD exibicao.
+    DATA: ls_dados_processados TYPE ty_s_dados_processados.
+
+    LOOP AT mt_dados_processados INTO ls_dados_processados.
+
+      WRITE: / '|---------------------------------------------------------------------------------------------|'.
+      WRITE: / '|                         Recibo Aduaneiro                                                    |'.
+      WRITE: / '|---------------------------------------------------------------------------------------------|'.
+      WRITE: / '|  :: Dados Recebidos                                                                         |'.
+      WRITE: / '|     Nº Protocolo '. WRITE: at 35 ls_dados_processados-protocolo.              WRITE: AT 95 '|'.
+      write: / '|     Declarado: '. WRITE: at 35 ls_dados_processados-declarado.                WRITE: AT 95 '|'.                                              .
+      WRITE: / '|     País de Origem: '. WRITE: at 35 ls_dados_processados-pais_origem.         WRITE: AT 95 '|'.
+      WRITE: / '|     Descrição do Produto: '. WRITE: at 35 ls_dados_processados-descr_produto. WRITE: AT 95 '|'.
+      WRITE: / '|     Valor do Produto: '. WRITE: ls_dados_processados-valor_produto.           WRITE: AT 95 '|'.
+      WRITE: / '|---------------------------------------------------------------------------------------------|'.
+      WRITE: / '|  :: Dados Processados                                                                       |'.
+      WRITE: / '|     Status:                                                                                 |'.
+      WRITE: / '|'. WRITE: AT 7 ls_dados_processados-status.                                    WRITE: AT 95 '|'.
+      WRITE: / '|     Taxa/Imposto: '. WRITE: AT 22 ls_dados_processados-valor_imposto.         WRITE: AT 95 '|'.
+      WRITE: / '|     Multa: '. WRITE: AT 22 ls_dados_processados-valor_multa.                  WRITE: AT 95 '|'.
+      WRITE: / '|     Total a Pagar: '. WRITE: AT 22 ls_dados_processados-valor_total.       WRITE: AT 92 'ITZ|'.
+      WRITE: / '|---------------------------------------------------------------------------------------------|'.
+      WRITE: /.
+    ENDLOOP.
 
   ENDMETHOD.                    "exibicao
 
