@@ -29,16 +29,15 @@ METHOD zabaptrif01_jm~calculo.
 
 *    CHN:
 *    Até R$1000 ISENTO
-*    Acima: multa 10% do produto + 60% do excedente
+*    Acima: 10% do produto + 60% do excedente
 
   DATA: lv_excedente TYPE pad_amt7s.
 
   IF iv_valor_produto > 1000.
-    ev_valor_multa = iv_valor_produto * '0.1'.
     lv_excedente = iv_valor_produto - 1000.
-    ev_valor_imposto = lv_excedente * '0.6'. "Formato internacional para cálculo de porcentagem
+    ev_valor_imposto = lv_excedente * '0.6' + iv_valor_produto * '0.1'. "Formato internacional para cálculo de porcentagem
     ev_valor_total = ev_valor_imposto + ev_valor_multa.
-    ev_status = 'Imposto de 60% cobrado sobre valores excedentes a R$1000,00 + 10% do valor do produto.'.
+    ev_status = 'Imposto de 60% ref valores excedentes + 10% do valor do produto.'.
   ELSE.
     ev_status = 'Isento.'.
   ENDIF.

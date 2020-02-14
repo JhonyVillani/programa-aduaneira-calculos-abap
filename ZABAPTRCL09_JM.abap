@@ -35,14 +35,12 @@ METHOD zabaptrif01_jm~calculo.
     ev_valor_imposto = iv_valor_produto * '0.5' + 200.
     IF ev_valor_imposto > iv_valor_produto.
       ev_valor_imposto = iv_valor_produto.
-      ev_valor_multa = ev_valor_imposto * '0.5'.
-      ev_valor_total = ev_valor_imposto + ev_valor_multa.
       ev_status = 'Imposto no valor do produto + 50% de multa no valor do imposto.'.
     ELSE.
-      ev_valor_multa = ev_valor_imposto * '0.5'.
-      ev_valor_total = ev_valor_imposto + ev_valor_multa.
       ev_status = 'Imposto de 50% sobre o valor do produto + R$200.'.
     ENDIF.
+    ev_valor_multa = ev_valor_imposto * '0.5'.
+    ev_valor_total = ev_valor_imposto + ev_valor_multa.
   ELSE.
     ev_valor_imposto = iv_valor_produto * '0.08' + 100.
     ev_valor_total = ev_valor_imposto.
